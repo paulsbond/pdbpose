@@ -14,7 +14,7 @@ def parse_args() -> Namespace:
 def main() -> None:
     args = parse_args()
     reference = None
-    for pdb_id, asym_id in sorted(pdbe.chains(args.uniprot)):
+    for pdb_id, asym_id in sorted(pdbe.subchains(args.uniprot)):
         print(pdb_id, asym_id)
         structure = pdbe.structure(pdb_id)
         trimmed = trim(structure, asym_id, args.radius)

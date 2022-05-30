@@ -7,7 +7,7 @@ import requests
 SERVER = "https://www.ebi.ac.uk/pdbe"
 
 
-def chains(uniprot: str) -> Iterable[Tuple[str, str]]:
+def subchains(uniprot: str) -> Iterable[Tuple[str, str]]:
     url = f"{SERVER}/search/pdb/select?"
     query = f"uniprot_accession:{uniprot} AND status:REL"
     filter_list = "pdb_id,struct_asym_id"
