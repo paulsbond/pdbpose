@@ -7,6 +7,7 @@ from . import pdbe
 def parse_args() -> Namespace:
     parser = ArgumentParser()
     parser.add_argument("uniprot")
+    parser.add_argument("--radius", type=float, default=4.0)
     return parser.parse_args()
 
 
@@ -16,7 +17,7 @@ def main() -> None:
     for pdb_id, asym_id in sorted(pdbe.chains(args.uniprot)):
         print(pdb_id, asym_id)
         structure = pdbe.structure(pdb_id)
-        trimmed = trim(structure, asym_id)
+        trimmed = trim(structure, asym_id, args.radius)
         if reference is None:
             reference = trimmed
         else:
@@ -24,17 +25,18 @@ def main() -> None:
         write_pdb(trimmed, pdb_id, asym_id)
 
 
-def trim(structure: gemmi.Structure, asym_id: str) -> gemmi.Structure:
+def trim(structure: gemmi.Structure, asym_id: str, radius: float) -> gemmi.Structure:
     trimmed = gemmi.Structure()
     model = trimmed.find_or_add_model("1")
     model.add_chain("A")
     model.add_chain("B")
-    search = gemmi.NeighborSearch(structure, max_radius=4.0).populate(include_h=False)
+    search = gemmi.NeighborSearch(structure, max_radius=radius)
+    search.populate(include_h=False)
     transforms = {}
     for residue in structure[0].get_subchain(asym_id):
         model["A"].add_residue(residue)
         for atom in residue:
-            for mark in search.find_neighbors(atom, max_dist=4.0):
+            for mark in search.find_neighbors(atom, max_dist=radius):
                 cra = mark.to_cra(structure[0])
                 transform = search.get_image_transformation(mark.image_idx)
                 image = structure.cell.find_nearest_pbc_image(
